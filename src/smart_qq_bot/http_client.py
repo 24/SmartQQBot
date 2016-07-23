@@ -60,7 +60,7 @@ class HttpClient(object):
                 raise ServerResponseEmpty("Server response error, check the network connections: %s" % url)
             self._cookie.save('cookie/cookie.data', ignore_discard=True, ignore_expires=True)
             return tmp_req.read()
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             return e.read()
 
     def get_cookie(self, key):
