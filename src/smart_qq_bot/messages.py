@@ -38,7 +38,7 @@ class QMessage(object):
     def content(self):
         text = ""
         for msg_part in self._content:
-            if isinstance(msg_part, (str, unicode)):
+            if isinstance(msg_part, (str)):
                 text += msg_part
             elif len(msg_part) > 1:
                 if str(msg_part[0]) == OFF_PIC_PART:
@@ -57,9 +57,6 @@ class QMessage(object):
             cls=self.__class__.__name__,
             content=self.poll_type + " " + str(self._content)
         )
-
-    def __unicode__(self):
-        return unicode(self.__str__())
 
 
 class SessMsg(QMessage):

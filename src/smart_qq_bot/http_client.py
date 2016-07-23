@@ -1,20 +1,19 @@
-import cookielib
+#import cookielib
+import http.cookiejar
 import urllib
-import urllib2
+#import urllib.request
 import time
 import os
-from httplib import BadStatusLine
+#from httplib import BadStatusLine
+from http.client import BadStatusLine
 
-from smart_qq_bot.config import (
-    SMART_QQ_REFER,
-    COOKIE_FILE,
-)
+from smart_qq_bot.config import SMART_QQ_REFER,COOKIE_FILE
 from smart_qq_bot.excpetions import ServerResponseEmpty
 
 
 class HttpClient(object):
-    _cookie = cookielib.LWPCookieJar(COOKIE_FILE)
-    _req = urllib2.build_opener(urllib2.HTTPCookieProcessor(_cookie))
+    _cookie = http.cookiejar.LWPCookieJar(COOKIE_FILE)
+    _req = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_cookie))
     _req.addheaders = [
         ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'),
         ('User-Agent',
@@ -22,7 +21,7 @@ class HttpClient(object):
          "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36"),
         ('Referer', 'http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1')
     ]
-    urllib2.install_opener(_req)
+    urllib.request.install_opener(_req)
 
     def __init__(self, load_cookie=False):
         if not os.path.isdir("./cookie"):
@@ -42,25 +41,25 @@ class HttpClient(object):
 
     def get(self, url, refer=None):
         try:
-            req = urllib2.Request(url)
+            req = urllib.request.Request(url)
             req.add_header('Referer', refer or SMART_QQ_REFER)
-            tmp_req = urllib2.urlopen(req)
+            tmp_req = urllib.request.urlopen(req)
             self._cookie.save('cookie/cookie.data',ignore_discard=True,ignore_expires=True)
             return tmp_req.read()
-        except urllib2.HTTPError, e:
+        except urllib.request.HTTPError as e:
             return e.read()
 
     def post(self, url, data, refer=None):
         try:
-            req = urllib2.Request(url, urllib.urlencode(data))
+            req = urllib.request.Request(url, urllib.parse.urlencode(data).encode('utf8'))
             req.add_header('Referer', refer or SMART_QQ_REFER)
             try:
-                tmp_req = urllib2.urlopen(req, timeout=180)
+                tmp_req = urllib.request.urlopen(req, timeout=180)
             except BadStatusLine:
                 raise ServerResponseEmpty("Server response error, check the network connections: %s" % url)
             self._cookie.save('cookie/cookie.data', ignore_discard=True, ignore_expires=True)
             return tmp_req.read()
-        except urllib2.HTTPError as e:
+        except urllib.request.HTTPError as e:
             return e.read()
 
     def get_cookie(self, key):
@@ -82,5 +81,5 @@ class HttpClient(object):
     @staticmethod
     def download(url, file):
         output = open(file, 'wb')
-        output.write(urllib2.urlopen(url).read())
+        output.write(urllib.request.urlopen(url).read())
         output.close()

@@ -43,7 +43,7 @@ class QRLoginFailed(UserWarning):
 def show_qr(path):
     import platform
     try:
-        from Tkinter import Tk, Label
+        from tkinter import Toplevel, Label
     except ImportError:
         raise SystemError('缺少Tkinter模块, 可使用sudo pip install Tkinter尝试安装')
     try:
@@ -56,7 +56,7 @@ def show_qr(path):
         img = Image.open(path)
         img.show()
     else:
-        root = Tk()
+        root = Toplevel()
         img = ImageTk.PhotoImage(
             Image.open(path)
         )
@@ -66,7 +66,7 @@ def show_qr(path):
 
 
 def find_first_result(html, regxp, error, raise_exception=False):
-    founds = re.findall(regxp, html)
+    founds = re.findall(regxp, html.decode('utf8'))
     tip = "Can not find given pattern [%s]in response: %s" % (regxp, error)
     if not founds:
         if raise_exception:
@@ -118,7 +118,7 @@ class QQBot(object):
             url = "http://d1.web2.qq.com/channel/get_c2cmsg_sig2?id=%s&to_uin=%s&service_type=%s&clientid=%s&psessionid=%s&t=%d" % (
                 guin, tuin, service_type, self.client_id, self.psessionid, int(time.time() * 100))
             response = self.client.get(url)
-            rsp_json = json.loads(response)
+            rsp_json = json.loads(str(response, encoding = "utf-8"))
             if rsp_json["retcode"] != 0:
                 return ""
             sig = rsp_json["result"]["value"]
@@ -145,7 +145,7 @@ class QQBot(object):
             SMART_QQ_REFER
         )
         try:
-            ret = json.loads(response)
+            ret = json.loads(str(response, encoding = "utf-8"))
         except ValueError:
             logger.warning("Cookies login fail, response decode error.")
             return
@@ -159,7 +159,7 @@ class QQBot(object):
                         self.psessionid,
                         self.client.get_timestamp()
                 ))
-        ret2 = json.loads(response2)
+        ret2 = json.loads(str(response2, encoding = "utf-8"))
 
         if ret2['retcode'] != 0:
             raise CookieLoginFailed(
@@ -278,7 +278,7 @@ class QQBot(object):
             init_url
         )
         ret_code = int(find_first_result(login_result, r"\d+?", None))
-        redirect_info = re.findall(r"(http.*?)\'", login_result)
+        redirect_info = re.findall(r"(http.*?)\'", login_result.decode('utf8'))
         if redirect_info:
             logger.debug("redirect_info match is: %s" % redirect_info)
             redirect_url = redirect_info[0]
@@ -332,7 +332,7 @@ class QQBot(object):
         if response == "":
             return
         try:
-            ret = json.loads(response)
+            ret = json.loads(str(response, encoding = "utf-8"))
         except ValueError:
             logger.warning("RUNTIMELOG decode poll response error.")
             logger.debug("RESPONSE {}".format(response))
@@ -402,7 +402,7 @@ class QQBot(object):
             url = "http://s.web2.qq.com/api/get_self_info2?t={}".format(time.time())
             response = self.client.get(url)
             logger.debug("get_self_info2 response:{}".format(response))
-            rsp_json = json.loads(response)
+            rsp_json = json.loads(str(response, encoding = "utf-8"))
             if rsp_json["retcode"] != 0:
                 try_times += 1
                 logger.warning("get_self_info2 fail. {}".format(try_times))
@@ -432,7 +432,7 @@ class QQBot(object):
         )  # {"result":[],"retcode":0}
         logger.debug("RESPONSE get_online_buddies2 html:{}".format(response))
         try:
-            online_buddies = json.loads(response)
+            online_buddies = json.loads(str(response, encoding = "utf-8"))
         except ValueError:
             logger.warning("get_online_buddies2 response decode as json fail.")
             return None
@@ -488,7 +488,7 @@ class QQBot(object):
         url = "http://s.web2.qq.com/api/get_single_long_nick2?tuin=%s&vfwebqq=%s&t=%s" % (
             tuin, self.vfwebqq, int(time.time() * 100))
         response = self.client.get(url)
-        rsp_json = json.loads(response)
+        rsp_json = json.loads(str(response, encoding = "utf-8"))
         if rsp_json["retcode"] != 0:
             return {}
         return rsp_json["result"]
@@ -560,7 +560,7 @@ class QQBot(object):
             },
         )
         try:
-            response = json.loads(response)
+            response = json.loads(str(response, encoding = "utf-8"))
         except ValueError:
             logger.warning("RUNTIMELOG The response of group list request can't be load as json")
             return
@@ -597,7 +597,7 @@ class QQBot(object):
         data = {'bkn': self.bkn}
         response = self.client.post(url, data=data, refer='http://qun.qq.com/member.html')
         logger.debug("get_group_list response: {}".format(response))
-        rsp_json = json.loads(response)
+        rsp_json = json.loads(str(response, encoding = "utf-8"))
         if rsp_json['ec'] == 0:
             group_id_list = list()
             group_id_list.extend(rsp_json.get('join') or [])
@@ -702,7 +702,7 @@ class QQBot(object):
             url = "http://s.web2.qq.com/api/get_group_info_ext2?gcode=%s&vfwebqq=%s&t=%s" % (
                 group_code, self.vfwebqq, int(time.time() * 100))
             response = self.client.get(url)
-            rsp_json = json.loads(response)
+            rsp_json = json.loads(str(response, encoding = "utf-8"))
             logger.debug("get_group_member_info_list info response: {}".format(rsp_json))
             retcode = rsp_json["retcode"]
             if retcode == 0:
@@ -760,7 +760,7 @@ class QQBot(object):
                 ('clientid', self.client_id),
                 ('psessionid', self.psessionid)
             )
-            rsp = self.client.post(req_url, data, SMART_QQ_REFER)
+            rsp = str(self.client.post(req_url, data, SMART_QQ_REFER),encoding = "utf-8")
             rsp_json = json.loads(rsp)
             if 'retcode' in rsp_json and rsp_json['retcode'] not in MESSAGE_SENT:
                 raise ValueError("RUNTIMELOG reply group chat error" + str(rsp_json['retcode']))
@@ -792,7 +792,7 @@ class QQBot(object):
                 ('clientid', self.client_id),
                 ('psessionid', self.psessionid)
             )
-            rsp = self.client.post(req_url, data, SMART_QQ_REFER)
+            rsp = str(self.client.post(req_url, data, SMART_QQ_REFER), encoding = "utf-8")
             rsp_json = json.loads(rsp)
             if 'errCode' in rsp_json and rsp_json['errCode'] != 0:
                 raise ValueError("reply pmchat error" + str(rsp_json['retcode']))

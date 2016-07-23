@@ -4,6 +4,7 @@ import logging
 import os
 import socket
 import sys
+#import imp
 
 from smart_qq_bot.config import COOKIE_FILE
 from smart_qq_bot.logger import logger
@@ -15,9 +16,9 @@ from smart_qq_bot.signals import bot_inited_registry
 
 
 def patch():
-    reload(sys)
-    sys.setdefaultencoding("utf-8")
-
+    #imp.reload(sys)
+    #sys.setdefaultencoding("utf-8")
+    return
 
 def clean_cookie():
     if os.path.isfile(COOKIE_FILE):
@@ -37,7 +38,7 @@ def main_loop(no_gui=False, new_user=False, debug=False):
         clean_cookie()
     bot.login(no_gui)
     observer = MessageObserver(bot)
-    for name, func in bot_inited_registry.iteritems():
+    for name, func in bot_inited_registry.items():
         try:
             func(bot)
         except Exception:
@@ -85,4 +86,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
