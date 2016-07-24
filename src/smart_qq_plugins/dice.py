@@ -37,3 +37,30 @@ def callme(msg, bot):
         logger.info("RUNTIMELOG " + str(msg.from_uin) + " calling me out, trying to reply....")
         reply_content = "干嘛（‘·д·）" + random.choice(REPLY_SUFFIX)
         reply(reply_content)
+
+# =====骰子功能=====
+
+dice_flag = re.compile("^\.r\s(\d*)d(\d*)(\s.*)?")
+def is_dice(key):
+    result = re.findall(dice_flag, key)
+    if result:
+        return result[0]
+    return None
+
+@on_all_message(name='dice')
+def dice(msg, bot):
+    result = is_dice(msg.content)
+    if result:
+        num, numrange, reason = result[0],int(result[1]),result[2]
+        if num:
+            num = int(num)
+        else:
+            num = 1
+        reply = bot.reply_msg(msg, return_function=True)
+        logger.info("RUNTIMELOG " + str(msg.from_uin) + " dice, trying to reply....")
+        result = [random.randint(1,numrange) for x in range(num)]
+        reply_content = "因为："+reason+",投出了："
+        for num in result:
+            reply_content += str(num)+"+"
+        reply_content = reply_content[:-1]+'='+str(sum(result))
+        reply(reply_content)
