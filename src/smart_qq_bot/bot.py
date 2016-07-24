@@ -15,6 +15,7 @@ from smart_qq_bot.http_client import HttpClient
 from smart_qq_bot.messages import (
     QMessage,
     GroupMsg,
+    DiscuMsg,
     PrivateMsg,
     SessMsg,
 )
@@ -778,6 +779,38 @@ class QQBot(object):
                 logger.warning("RUNTIMELOG send_qun_msg: Response Error over 5 times.Exit.reply content:" + str(reply_content))
                 return False
 
+    # 发送讨论组消息
+    def send_discu_msg(self, reply_content, did, msg_id, fail_times=0):
+        fix_content = str(reply_content.replace("\\", "\\\\\\\\").replace("\n", "\\\\n").replace("\t", "\\\\t"))
+        rsp = ""
+        try:
+            logger.info("Starting send group message: %s" % reply_content)
+            req_url = "http://d1.web2.qq.com/channel/send_discu_msg2"
+            data = (
+                ('r',
+                 '{{"did":{0}, "face":564,"content":"[\\"{4}\\",[\\"font\\",{{\\"name\\":\\"Arial\\",\\"size\\":\\"10\\",\\"style\\":[0,0,0],\\"color\\":\\"000000\\"}}]]","clientid":{1},"msg_id":{2},"psessionid":"{3}"}}'.format(
+                         did, self.client_id, msg_id, self.psessionid, fix_content)),
+                ('clientid', self.client_id),
+                ('psessionid', self.psessionid)
+            )
+            rsp = str(self.client.post(req_url, data, SMART_QQ_REFER),encoding = "utf-8")
+            rsp_json = json.loads(rsp)
+            if 'retcode' in rsp_json and rsp_json['retcode'] not in MESSAGE_SENT:
+                raise ValueError("RUNTIMELOG reply discu chat error" + str(rsp_json['retcode']))
+            logger.info("RUNTIMELOG send_qun_msg: Reply '{}' successfully.".format(reply_content))
+            logger.debug("RESPONSE send_qun_msg: Reply response: " + str(rsp))
+            return rsp_json
+        except:
+            logger.warning("RUNTIMELOG send_qun_msg fail")
+            if fail_times < 5:
+                logger.warning("RUNTIMELOG send_qun_msg: Response Error.Wait for 2s and Retrying." + str(fail_times))
+                logger.debug("RESPONSE send_qun_msg rsp:" + str(rsp))
+                time.sleep(2)
+                self.send_group_msg(reply_content, group_code, msg_id, fail_times + 1)
+            else:
+                logger.warning("RUNTIMELOG send_qun_msg: Response Error over 5 times.Exit.reply content:" + str(reply_content))
+                return False
+
 
     # 发送私密消息
     def send_friend_msg(self, reply_content, uin, msg_id, fail_times=0):
@@ -827,6 +860,11 @@ class QQBot(object):
             if return_function:
                 return functools.partial(self.send_friend_msg, uin=msg.from_uin, msg_id=msg_id)
             return self.send_friend_msg(reply_content=reply_content, uin=msg.from_uin, msg_id=msg_id)
+        if isinstance(msg, DiscuMsg):
+            if return_function:
+                return functools.partial(self.send_discu_msg, did=msg.did, msg_id=msg_id)
+            return self.send_discu_msg(reply_content=reply_content, did=msg.did, msg_id=msg_id)
+            pass
         if isinstance(msg, SessMsg):
             # 官方已废弃临时消息接口, 等官方重启后再完善此函数
             pass
