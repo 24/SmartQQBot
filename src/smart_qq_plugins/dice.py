@@ -9,6 +9,8 @@ from smart_qq_bot.signals import (
     on_private_message,
 )
 
+DEFAULT_DICE_NUM = 1
+DEFAULT_DICE_RANGE = 100
 
 # =====唤出插件=====
 
@@ -51,11 +53,15 @@ def is_dice(key):
 def dice(msg, bot):
     result = is_dice(msg.content)
     if result:
-        num, numrange, reason = result[0],int(result[1]),result[2]
+        num, numrange, reason = result[0],result[1],result[2]
         if num:
             num = int(num)
         else:
-            num = 1
+            num = DEFAULT_DICE_NUM
+        if numrange:
+            numrange = int(numrange)
+        else:
+            numrange = DEFAULT_DICE_RANGE
         reply = bot.reply_msg(msg, return_function=True)
         logger.info("RUNTIMELOG " + str(msg.from_uin) + " dice, trying to reply....")
         result = [random.randint(1,numrange) for x in range(num)]

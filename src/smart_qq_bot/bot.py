@@ -784,7 +784,7 @@ class QQBot(object):
         fix_content = str(reply_content.replace("\\", "\\\\\\\\").replace("\n", "\\\\n").replace("\t", "\\\\t"))
         rsp = ""
         try:
-            logger.info("Starting send group message: %s" % reply_content)
+            logger.info("Starting send discu message: %s" % reply_content)
             req_url = "http://d1.web2.qq.com/channel/send_discu_msg2"
             data = (
                 ('r',
@@ -797,18 +797,18 @@ class QQBot(object):
             rsp_json = json.loads(rsp)
             if 'retcode' in rsp_json and rsp_json['retcode'] not in MESSAGE_SENT:
                 raise ValueError("RUNTIMELOG reply discu chat error" + str(rsp_json['retcode']))
-            logger.info("RUNTIMELOG send_qun_msg: Reply '{}' successfully.".format(reply_content))
-            logger.debug("RESPONSE send_qun_msg: Reply response: " + str(rsp))
+            logger.info("RUNTIMELOG send_discu_msg: Reply '{}' successfully.".format(reply_content))
+            logger.debug("RESPONSE send_discu_msg: Reply response: " + str(rsp))
             return rsp_json
         except:
-            logger.warning("RUNTIMELOG send_qun_msg fail")
+            logger.warning("RUNTIMELOG send_discu_msg fail")
             if fail_times < 5:
-                logger.warning("RUNTIMELOG send_qun_msg: Response Error.Wait for 2s and Retrying." + str(fail_times))
-                logger.debug("RESPONSE send_qun_msg rsp:" + str(rsp))
+                logger.warning("RUNTIMELOG send_discu_msg: Response Error.Wait for 2s and Retrying." + str(fail_times))
+                logger.debug("RESPONSE send_discu_msg rsp:" + str(rsp))
                 time.sleep(2)
                 self.send_group_msg(reply_content, group_code, msg_id, fail_times + 1)
             else:
-                logger.warning("RUNTIMELOG send_qun_msg: Response Error over 5 times.Exit.reply content:" + str(reply_content))
+                logger.warning("RUNTIMELOG send_discu_msg: Response Error over 5 times.Exit.reply content:" + str(reply_content))
                 return False
 
 
