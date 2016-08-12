@@ -1,6 +1,6 @@
 # coding: utf-8
 from collections import defaultdict, namedtuple
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 
 from smart_qq_bot.bot import QQBot
@@ -25,7 +25,7 @@ _active = set()
 
 RAW_TYPE = "raw_message"
 
-MSG_TYPES = MSG_TYPE_MAP.keys()
+MSG_TYPES = list(MSG_TYPE_MAP.keys())
 MSG_TYPES.append(RAW_TYPE)
 
 
@@ -102,9 +102,7 @@ class Worker(Thread):
         """
         :type queue: Queue
         """
-        super(Worker, self).__init__(
-            group, target, name, args, kwargs, verbose
-        )
+        super(Worker, self).__init__(group, target, name, args, kwargs)
         self.queue = queue
         self._stopped = False
         self.worker_timeout = 20
@@ -142,7 +140,7 @@ class MessageObserver(object):
             )
         self.bot = bot
         self.handler_queue = Queue()
-        self.workers = [Worker(self.handler_queue) for i in xrange(workers)]
+        self.workers = [Worker(self.handler_queue) for i in range(workers)]
         for worker in self.workers:
             worker.setDaemon(True)
             worker.start()

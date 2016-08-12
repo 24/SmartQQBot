@@ -25,4 +25,3 @@ def init_logging(logger, log_level=logging.DEBUG):
     ch.setLevel(log_level)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-

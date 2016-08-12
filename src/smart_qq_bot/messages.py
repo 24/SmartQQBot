@@ -2,6 +2,7 @@
 
 PRIVATE_MSG = "message"
 GROUP_MSG = "group_message"
+DISCU_MSG = "discu_message"
 SESS_MSG = "sess_message"
 INPUT_NOTIFY_MSG = "input_notify"
 KICK_MSG = "kick_message"
@@ -38,7 +39,7 @@ class QMessage(object):
     def content(self):
         text = ""
         for msg_part in self._content:
-            if isinstance(msg_part, (str, unicode)):
+            if isinstance(msg_part, (str)):
                 text += msg_part
             elif len(msg_part) > 1:
                 if str(msg_part[0]) == OFF_PIC_PART:
@@ -57,9 +58,6 @@ class QMessage(object):
             cls=self.__class__.__name__,
             content=self.poll_type + " " + str(self._content)
         )
-
-    def __unicode__(self):
-        return unicode(self.__str__())
 
 
 class SessMsg(QMessage):
@@ -90,12 +88,21 @@ class GroupMsg(QMessage):
         self.send_uin = msg_dict['value']['send_uin']
         self.from_uin = msg_dict['value']['from_uin']
 
+class DiscuMsg(QMessage):
+
+    def __init__(self, msg_dict):
+        super(DiscuMsg, self).__init__(msg_dict)
+        self.did = msg_dict['value']['did']
+        self.send_uin = msg_dict['value']['send_uin']
+        self.from_uin = msg_dict['value']['from_uin']
+
 MSG_TYPE_MAP = {
     GROUP_MSG: GroupMsg,
     INPUT_NOTIFY_MSG: QMessage,
     KICK_MSG: QMessage,
     SESS_MSG: SessMsg,
     PRIVATE_MSG: PrivateMsg,
+    DISCU_MSG: DiscuMsg,
 }
 
 

@@ -6,6 +6,7 @@ from smart_qq_bot.handler import (
 )
 from smart_qq_bot.messages import (
     GROUP_MSG,
+    DISCU_MSG,
     PRIVATE_MSG)
 
 bot_inited_registry = {}
@@ -35,6 +36,7 @@ def _mk_wrapper(msg_type):
 
 on_all_message = _mk_wrapper(None)
 on_group_message = _mk_wrapper(GROUP_MSG)
+on_discu_message = _mk_wrapper(DISCU_MSG)
 on_private_message = _mk_wrapper(PRIVATE_MSG)
 
 
